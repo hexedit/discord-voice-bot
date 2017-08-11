@@ -9,16 +9,17 @@ if not opus.is_loaded():
 config = ConfigParser()
 config.read('config.ini')
 
-token = None
+client = MyDiscord()
 try:
-    token = config.get('discord', 'token')
+    client.token = config.get('discord', 'token')
 except (NoSectionError, NoOptionError):
     print("No config option - discord/token");
-    exit(1)
 
-client = MyDiscord()
-client.token = token
 voice = None
+try:
+    voice_volume = float(config.get('voice', 'volume')) / 100.0
+except:
+    voice_volume = 1.0
 
 voice_messages = dict()
 try:
@@ -29,23 +30,24 @@ except NoSectionError:
 
 @client.async_event
 def on_ready():
-    print("Logged in as {user.name}".format(user=client.user))
+    print("Logged in as \033[01m{user.name}\033[00m".format(user=client.user))
     print("Authorized on servers:")
     for server in client.servers:
-        print("\t- {server.name}".format(server=server))
+        print("\t- \033[01m{server.name}\033[00m".format(server=server))
     try:
         global voice
-        voice_channel = client.get_channel(config.get('discord', 'channel'))
+        voice_channel = client.get_channel(config.get('voice', 'channel'))
         if voice_channel is not None and voice_channel.type is ChannelType.voice:
             voice = yield from client.join_voice_channel(voice_channel)
         if voice is not None:
-            print("Connected to voice channel {channel.name} on {channel.server.name}".format(channel=voice_channel))
-    except NoOptionError:
+            print("Connected to voice channel \033[01m{channel.name}\033[00m on \033[01m{channel.server.name}\033[00m".format(channel=voice_channel))
+    except:
         pass
 
 @client.async_event
 def on_message(message):
     if message.content in voice_messages and voice.is_connected():
-        print("Playing message for " + message.content)
+        print("Playing message for \033[01m{}\033[00m at volume \033[01m{}\033[00m".format(message.content, voice_volume));
         player = voice.create_ffmpeg_player('media/voice/' + voice_messages[message.content])
+        player.volume = voice_volume
         player.start()
