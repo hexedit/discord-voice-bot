@@ -2,7 +2,16 @@ from . import MyDiscord
 from configparser import ConfigParser, NoSectionError, NoOptionError
 from discord import opus, ChannelType
 from yandex_speech import TTS
+from random import randint
 
+tts_voices = [
+    'jane',
+    'oksana',
+    'alyss',
+    'omazh',
+    'zahar',
+    'ermil'
+]
 
 if not opus.is_loaded():
     opus.load_opus('voice')
@@ -31,6 +40,21 @@ except NoSectionError:
     pass
 
 
+def free_player():
+    global player
+    player = None
+
+
+def play_file(to_play):
+    global player
+    if to_play is not None and player is None and voice.is_connected():
+        if not to_play.startswith('/'):
+            to_play = 'media/voice/' + to_play
+        player = voice.create_ffmpeg_player(to_play, after=free_player)
+        player.volume = voice_volume
+        player.start()
+
+
 @client.async_event
 def on_ready():
     print("Logged in as \033[01m{user.name}\033[00m".format(user=client.user))
@@ -45,13 +69,12 @@ def on_ready():
         if voice is not None:
             print("Connected to voice channel \033[01m{channel.name}\033[00m on \033[01m{channel.server.name}\033[00m"
                   .format(channel=voice_channel))
+            try:
+                play_file(config.get('voice', 'play on join'))
+            except NoOptionError:
+                pass
     except (NoSectionError, NoOptionError):
         pass
-
-
-def free_player():
-    global player
-    player = None
 
 
 @client.async_event
@@ -62,17 +85,15 @@ def on_message(message):
         if message.content.lower() in voice_messages:
             print("Playing message for \033[01m{}\033[00m at volume \033[01m{}\033[00m"
                   .format(message.content, voice_volume))
-            toplay = 'media/voice/' + voice_messages[message.content.lower()]
+            toplay = voice_messages[message.content.lower()]
         elif message.server is None:
             print("Retrieving TTS for \033[01m{}\033[00m".format(message.content))
             try:
+                tts_voice = tts_voices[randint(0, len(tts_voices) - 1)]
                 key = config.get('tts', 'api key')
-                tts = TTS('jane', 'opus', key, lang='ru_RU', emotion='neutral')
+                tts = TTS(tts_voice, 'opus', key, lang='ru_RU', emotion='neutral')
                 tts.generate(message.content)
                 toplay = tts.save("/tmp/tts.opus")
             except (NoSectionError, NoOptionError):
                 pass
-        if toplay is not None:
-            player = voice.create_ffmpeg_player(toplay, after=free_player)
-            player.volume = voice_volume
-            player.start()
+        play_file(toplay)
