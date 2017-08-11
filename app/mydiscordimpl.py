@@ -36,7 +36,7 @@ def on_ready():
     try:
         global voice
         voice_channel = client.get_channel(config.get('discord', 'channel'))
-        if voice_channel.type is ChannelType.voice:
+        if voice_channel is not None and voice_channel.type is ChannelType.voice:
             voice = yield from client.join_voice_channel(voice_channel)
         if voice is not None:
             print("Connected to voice channel {channel.name} on {channel.server.name}".format(channel=voice_channel))
