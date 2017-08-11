@@ -20,6 +20,7 @@ try:
     voice_volume = float(config.get('voice', 'volume')) / 100.0
 except:
     voice_volume = 1.0
+player = None
 
 voice_messages = dict()
 try:
@@ -44,10 +45,17 @@ def on_ready():
     except:
         pass
 
+def free_player():
+    global player
+    player = None
+
 @client.async_event
 def on_message(message):
-    if message.content in voice_messages and voice.is_connected():
+    global player
+    if message.content in voice_messages and voice.is_connected() and player is None:
         print("Playing message for \033[01m{}\033[00m at volume \033[01m{}\033[00m".format(message.content, voice_volume));
-        player = voice.create_ffmpeg_player('media/voice/' + voice_messages[message.content])
+        player = voice.create_ffmpeg_player(
+            'media/voice/' + voice_messages[message.content],
+            after=free_player)
         player.volume = voice_volume
         player.start()
