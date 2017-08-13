@@ -1,0 +1,13 @@
+[discord]
+token = <token get from app at https://discordapp.com/developers/applications/me>
+
+[voice]
+channel = <voice channel ID to join to>
+volume = 40
+#play on join = audio file
+
+[tts]
+api key = <api key from Yandex TTS>
+
+[voice-messages]
+#phrase = audio file
