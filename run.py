@@ -2,4 +2,9 @@
 
 from app import app
 
-app.run()
+if __name__ == '__main__':
+    while True:
+        try:
+            app.run()
+        finally:
+            break
