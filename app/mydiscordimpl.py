@@ -83,11 +83,17 @@ def on_message(message):
     toplay = None
     if voice.is_connected() and player is None:
         if message.content.lower() in voice_messages:
-            print("Playing message for \033[01m{}\033[00m at volume \033[01m{}\033[00m"
-                  .format(message.content, voice_volume))
+            if message.server is None:
+                message_author = message.author.name
+                message_channel = "private"
+            else:
+                message_author = message.author.display_name
+                message_channel = message.server.name + " / " + message.channel.name
+            print("Playing message for \033[01m{}\033[00m at volume \033[01m{}\033[00m by \033[01m{}\033[00m at \033[01m{}\033[00m"
+                  .format(message.content, voice_volume, message_author, message_channel))
             toplay = voice_messages[message.content.lower()]
         elif message.server is None:
-            print("Retrieving TTS for \033[01m{}\033[00m".format(message.content))
+            print("Retrieving TTS for \033[01m{}\033[00m by \033[01m{}\033[00m".format(message.content,message.author.name))
             try:
                 tts_voice = tts_voices[randint(0, len(tts_voices) - 1)]
                 key = config.get('tts', 'api key')
