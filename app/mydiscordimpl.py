@@ -103,3 +103,13 @@ def on_message(message):
             except (NoSectionError, NoOptionError):
                 pass
         play_file(toplay)
+
+@client.async_event
+def on_voice_state_update(before,after):
+    if voice and voice.is_connected() and after == client.user and after.voice_channel != before.voice_channel:
+        print("I have been moved to \033[01m{channel.name}\033[00m on \033[01m{channel.server.name}\033[00m"
+              .format(channel=after.voice_channel))
+        try:
+            play_file(config.get('voice', 'play on join'))
+        except NoOptionError:
+            pass
