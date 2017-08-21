@@ -3,6 +3,7 @@ from configparser import ConfigParser, NoSectionError, NoOptionError
 from discord import opus, ChannelType
 from yandex_speech import TTS
 from random import randint
+from asyncio import sleep
 
 tts_voices = [
     'jane',
@@ -28,8 +29,10 @@ except (NoSectionError, NoOptionError):
 voice = None
 try:
     voice_volume = float(config.get('voice', 'volume')) / 100.0
+    greeting_delay = float(config.get('voice', 'greeting delay'))
 except (NoSectionError, NoOptionError):
     voice_volume = 1.0
+    greeting_delay = 0.5
 player = None
 
 voice_messages = dict()
@@ -38,7 +41,6 @@ try:
         voice_messages[msg] = entry
 except NoSectionError:
     pass
-
 
 greetings = dict()
 try:
@@ -123,6 +125,7 @@ def on_voice_state_update(before,after):
             except NoOptionError:
                 pass
         elif after.voice_channel == voice.channel:
+            yield from sleep(greeting_delay)
             if after.id in greetings.keys():
                 play_file(greetings[after.id])
             elif 'default' in greetings.keys():

@@ -4,6 +4,7 @@ token = <token get from app at https://discordapp.com/developers/applications/me
 [voice]
 channel = <voice channel ID to join to>
 volume = 40
+greeting_delay = 0.5 # in seconds, delay before greeting message
 #play on join = audio file
 
 [tts]
