@@ -40,6 +40,14 @@ except NoSectionError:
     pass
 
 
+greetings = dict()
+try:
+    for userid, entry in config.items('greetings'):
+        greetings[userid] = entry
+except NoSectionError:
+    pass
+
+
 def free_player():
     global player
     player = None
@@ -106,10 +114,16 @@ def on_message(message):
 
 @client.async_event
 def on_voice_state_update(before,after):
-    if voice and voice.is_connected() and after == client.user and after.voice_channel != before.voice_channel:
-        print("I have been moved to \033[01m{channel.name}\033[00m on \033[01m{channel.server.name}\033[00m"
-              .format(channel=after.voice_channel))
-        try:
-            play_file(config.get('voice', 'play on join'))
-        except NoOptionError:
-            pass
+    if voice and voice.is_connected() and after.voice_channel != before.voice_channel:
+        if after == client.user and after.voice_channel != before.voice_channel:
+            print("I have been moved to \033[01m{channel.name}\033[00m on \033[01m{channel.server.name}\033[00m"
+                  .format(channel=after.voice_channel))
+            try:
+                play_file(config.get('voice', 'play on join'))
+            except NoOptionError:
+                pass
+        elif after.voice_channel == voice.channel:
+            if after.id in greetings.keys():
+                play_file(greetings[after.id])
+            elif 'default' in greetings.keys():
+                play_file(greetings['default'])
