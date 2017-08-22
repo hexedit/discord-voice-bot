@@ -27,12 +27,11 @@ except (NoSectionError, NoOptionError):
     print("No config option - discord/token")
 
 voice = None
+voice_volume = 1.0
 try:
     voice_volume = float(config.get('voice', 'volume')) / 100.0
-    greeting_delay = float(config.get('voice', 'greeting delay'))
 except (NoSectionError, NoOptionError):
-    voice_volume = 1.0
-    greeting_delay = 0.5
+    pass
 player = None
 
 voice_messages = dict()
@@ -47,6 +46,12 @@ try:
     for userid, entry in config.items('greetings'):
         greetings[userid] = entry
 except NoSectionError:
+    pass
+
+greeting_delay = 0.5
+try:
+    greeting_delay = float(config.get('voice', 'greeting delay'))
+except (NoSectionError, NoOptionError):
     pass
 
 
