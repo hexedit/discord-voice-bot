@@ -99,11 +99,13 @@ def on_message(message):
             else:
                 message_author = message.author.display_name
                 message_channel = message.server.name + " / " + message.channel.name
-            print("Playing message for \033[01m{}\033[00m at volume \033[01m{}\033[00m by \033[01m{}\033[00m at \033[01m{}\033[00m"
+            print("Playing message for \033[01m{}\033[00m at volume \033[01m{}\033[00m"
+                  " by \033[01m{}\033[00m at \033[01m{}\033[00m"
                   .format(message.content, voice_volume, message_author, message_channel))
             toplay = voice_messages[message.content.lower()]
         elif message.server is None:
-            print("Retrieving TTS for \033[01m{}\033[00m by \033[01m{}\033[00m".format(message.content,message.author.name))
+            print("Retrieving TTS for \033[01m{}\033[00m by \033[01m{}\033[00m"
+                  .format(message.content, message.author.name))
             try:
                 tts_voice = tts_voices[randint(0, len(tts_voices) - 1)]
                 key = config.get('tts', 'api key')
@@ -114,8 +116,9 @@ def on_message(message):
                 pass
         play_file(toplay)
 
+
 @client.async_event
-def on_voice_state_update(before,after):
+def on_voice_state_update(before, after):
     if voice and voice.is_connected() and after.voice_channel != before.voice_channel:
         if after == client.user and after.voice_channel != before.voice_channel:
             print("I have been moved to \033[01m{channel.name}\033[00m on \033[01m{channel.server.name}\033[00m"
