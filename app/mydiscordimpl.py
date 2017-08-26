@@ -4,6 +4,9 @@ from discord import opus, ChannelType
 from yandex_speech import TTS
 from random import randint
 from asyncio import sleep
+from tempfile import gettempdir
+import codecs
+import os.path
 
 tts_voices = [
     'jane',
@@ -18,7 +21,7 @@ if not opus.is_loaded():
     opus.load_opus('voice')
 
 config = ConfigParser()
-config.read('config.ini')
+config.read_file(codecs.open('config.ini','r','utf-8'))
 
 client = MyDiscord()
 try:
@@ -63,8 +66,8 @@ def free_player():
 def play_file(to_play):
     global player
     if to_play is not None and player is None and voice.is_connected():
-        if not to_play.startswith('/'):
-            to_play = 'media/voice/' + to_play
+        if not os.path.isabs(to_play):
+            to_play = os.path.join('media', 'voice', to_play)
         player = voice.create_ffmpeg_player(to_play, after=free_player)
         player.volume = voice_volume
         player.start()
@@ -116,7 +119,7 @@ def on_message(message):
                 key = config.get('tts', 'api key')
                 tts = TTS(tts_voice, 'opus', key, lang='ru_RU', emotion='neutral')
                 tts.generate(message.content)
-                toplay = tts.save("/tmp/tts.opus")
+                toplay = tts.save(os.path.join(gettempdir(), "tts.opus"))
             except (NoSectionError, NoOptionError):
                 pass
         play_file(toplay)
