@@ -8,6 +8,7 @@ from tempfile import gettempdir
 import codecs
 import os.path
 import re
+import ast
 
 tts_voices = [
     'jane',
@@ -58,6 +59,13 @@ try:
 except (NoSectionError, NoOptionError):
     pass
 
+commands = dict()
+try:
+    for _cmd, text in config.items('commands'):
+        commands[_cmd] = ast.literal_eval(text)
+except NoSectionError:
+    pass
+
 
 def free_player():
     global player
@@ -100,7 +108,7 @@ def on_ready():
 def process_command11(cmd, arg, message):
     print("Got command \033[01m{}\033[00m from \033[01m{}\033[00m with argument \033[01m{}\033[00m"
           .format(cmd, message.author.name, arg))
-    if cmd == 'move to' or cmd == 'go to' or cmd == 'пиздуй в':
+    if 'move to' in commands and cmd in commands['move to'] or cmd == 'move to':
         try:
             global voice
             ch = client.get_channel(arg)

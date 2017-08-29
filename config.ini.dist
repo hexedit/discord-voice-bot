@@ -16,3 +16,6 @@ api key = <api key from Yandex TTS>
 [greetings]
 #default = audio file for others
 #userid = audio file
+
+[commands]
+#command = ["command text 1", "command text 2", ...]
