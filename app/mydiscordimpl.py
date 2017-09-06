@@ -108,7 +108,7 @@ def on_ready():
 def process_command11(cmd, arg, message):
     print("Got command \033[01m{}\033[00m from \033[01m{}\033[00m with argument \033[01m{}\033[00m"
           .format(cmd, message.author.name, arg))
-    if 'move to' in commands and cmd in commands['move to'] or cmd == 'move to':
+    if ('move to' in commands and cmd in commands['move to']) or cmd == 'move to':
         try:
             global voice
             ch = client.get_channel(arg)
@@ -123,6 +123,9 @@ def process_command11(cmd, arg, message):
         except InvalidArgument as e:
             yield from client.send_message(message.channel, '\n'.join(e.args))
             pass
+    elif ('stop' in commands and cmd in commands['stop']) or cmd == 'stop':
+        if player:
+            player.stop()
 
 
 @client.async_event
