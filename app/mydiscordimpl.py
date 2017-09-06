@@ -105,9 +105,13 @@ def on_ready():
 
 
 @asyncio.coroutine
-def process_command11(cmd, arg, message):
-    print("Got command \033[01m{}\033[00m from \033[01m{}\033[00m with argument \033[01m{}\033[00m"
-          .format(cmd, message.author.name, arg))
+def process_command(cmd, arg, message):
+    if arg:
+        arg_print = "with argument \033[01m{}\033[00m".format(arg)
+    else:
+        arg_print = "without argument"
+    print("Got command \033[01m{}\033[00m from \033[01m{}\033[00m {}"
+          .format(cmd, message.author.name, arg_print))
     if ('move to' in commands and cmd in commands['move to']) or cmd == 'move to':
         try:
             global voice
@@ -125,6 +129,7 @@ def process_command11(cmd, arg, message):
             pass
     elif ('stop' in commands and cmd in commands['stop']) or cmd == 'stop':
         if player:
+            print("Stopping playback on request from \033[01m{}\033[00m".format(message.author.name))
             player.stop()
 
 
@@ -138,7 +143,7 @@ def on_message(message):
     if m and message.server is None:
         cmd = m[0][0].lower()
         arg = m[0][1]
-        yield from process_command11(cmd, arg, message)
+        yield from process_command(cmd, arg, message)
     elif voice.is_connected() and player is None:
         to_play = None
         if message.content.lower() in voice_messages:
