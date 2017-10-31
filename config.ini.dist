@@ -12,10 +12,16 @@ api key = <api key from Yandex TTS>
 
 [voice-messages]
 #phrase = audio file
+#another phrase = tts:Hello, World!
 
 [greetings]
 #default = audio file for others
 #userid = audio file
+#anotheruser = tts:Hi, somebody!
 
 [commands]
 #command = ["command text 1", "command text 2", ...]
+
+[events]
+#member join = tts:Welcome, {name}!
+#member remove = tts:Goodbye, {name}!

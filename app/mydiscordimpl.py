@@ -74,12 +74,25 @@ def free_player():
 
 def play_file(to_play):
     global player
+    if to_play.startswith('tts:'):
+        to_play = generate_tts(to_play[4:])
     if to_play is not None and player is None and voice.is_connected():
         if not os.path.isabs(to_play):
             to_play = os.path.join('media', 'voice', to_play)
         player = voice.create_ffmpeg_player(to_play, after=free_player)
         player.volume = voice_volume
         player.start()
+
+
+def generate_tts(tts_text):
+    try:
+        tts_voice = tts_voices[randint(0, len(tts_voices) - 1)]
+        key = config.get('tts', 'api key')
+        tts = TTS(tts_voice, 'opus', key, lang='ru_RU', emotion='neutral')
+        tts.generate(tts_text)
+        return tts.save(os.path.join(gettempdir(), "tts.opus"))
+    except (NoSectionError, NoOptionError):
+        return None
 
 
 @client.async_event
@@ -100,6 +113,22 @@ def on_ready():
                 play_file(config.get('voice', 'play on join'))
             except NoOptionError:
                 pass
+    except (NoSectionError, NoOptionError):
+        pass
+
+
+@client.async_event
+def on_member_join(member):
+    try:
+        play_file(config.get('events', 'member join').format(name=member.display_name))
+    except (NoSectionError, NoOptionError):
+        pass
+
+
+@client.async_event
+def on_member_remove(member):
+    try:
+        play_file(config.get('events', 'member remove').format(name=member.display_name))
     except (NoSectionError, NoOptionError):
         pass
 
@@ -157,17 +186,12 @@ def on_message(message):
                   " by \033[01m{}\033[00m at \033[01m{}\033[00m"
                   .format(message.content, voice_volume, message_author, message_channel))
             to_play = voice_messages[message.content.lower()]
+        elif message.content.startswith('tts:'):
+            to_play = generate_tts(message.content[4:])
         elif message.server is None:
             print("Retrieving TTS for \033[01m{}\033[00m by \033[01m{}\033[00m"
                   .format(message.content, message.author.name))
-            try:
-                tts_voice = tts_voices[randint(0, len(tts_voices) - 1)]
-                key = config.get('tts', 'api key')
-                tts = TTS(tts_voice, 'opus', key, lang='ru_RU', emotion='neutral')
-                tts.generate(message.content)
-                to_play = tts.save(os.path.join(gettempdir(), "tts.opus"))
-            except (NoSectionError, NoOptionError):
-                pass
+            to_play = generate_tts(message.content)
         play_file(to_play)
 
 
