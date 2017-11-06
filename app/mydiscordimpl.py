@@ -1,4 +1,4 @@
-from . import MyDiscord
+from . import MyDiscord, CommandProcessor
 from configparser import ConfigParser, NoSectionError, NoOptionError
 from discord import opus, ChannelType, InvalidArgument
 from yandex_speech import TTS
@@ -97,6 +97,7 @@ def generate_tts(tts_text):
 
 @client.async_event
 def on_ready():
+    CommandProcessor.load_modules()
     print("Logged in as \033[01m{user.name}\033[00m".format(user=client.user))
     print("Authorized on servers:")
     for server in client.servers:
@@ -160,6 +161,13 @@ def process_command(cmd, arg, message):
         if player:
             print("Stopping playback on request from \033[01m{}\033[00m".format(message.author.name))
             player.stop()
+    else:
+        CommandProcessor.process_command(cmd, arg,
+                                         message=message,
+                                         player=player,
+                                         voice=voice,
+                                         client=client,
+                                         commands=commands)
 
 
 @client.async_event
