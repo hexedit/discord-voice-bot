@@ -1,5 +1,6 @@
 import os
 import sys
+import asyncio
 
 
 class CommandProcessor(object):
@@ -8,12 +9,13 @@ class CommandProcessor(object):
     def __init__(self):
         self._name_ = 'undefined'
 
-    def on_load(self):
-        pass
-
+    @asyncio.coroutine
     def on_command(self, cmd, arg, client=None, **kwargs):
         print(client)
         pass
+
+    def get_command(self):
+        return self._name_
 
     @staticmethod
     def load_modules():
@@ -29,10 +31,11 @@ class CommandProcessor(object):
         for mod in CommandProcessor.__subclasses__():
             m = mod()
             CommandProcessor._modules_.append(m)
-            m.on_load()
+            print("Registered '{}' command processor".format(m.get_command()))
 
     @staticmethod
+    @asyncio.coroutine
     def process_command(cmd, arg, **kwargs):
         for m in CommandProcessor._modules_:
-            if m.on_command(cmd, arg, **kwargs):
+            if (yield from m.on_command(cmd, arg, **kwargs)):
                 break

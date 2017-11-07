@@ -1,6 +1,6 @@
 from . import MyDiscord, CommandProcessor
 from configparser import ConfigParser, NoSectionError, NoOptionError
-from discord import opus, ChannelType, InvalidArgument
+from discord import opus, ChannelType
 from yandex_speech import TTS
 from random import randint
 import asyncio
@@ -97,6 +97,14 @@ def generate_tts(tts_text):
         return None
 
 
+@asyncio.coroutine
+def switch_voice_channel(new):
+    global voice
+    if voice:
+        yield from voice.disconnect()
+    voice = yield from client.join_voice_channel(new)
+
+
 @client.async_event
 def on_ready():
     CommandProcessor.load_modules()
@@ -144,32 +152,12 @@ def process_command(cmd, arg, message):
         arg_print = "without argument"
     print("Got command \033[01m{}\033[00m from \033[01m{}\033[00m {}"
           .format(cmd, message.author.name, arg_print))
-    if ('move to' in commands and cmd in commands['move to']) or cmd == 'move to':
-        try:
-            global voice
-            ch = client.get_channel(arg)
-            if ch is None or ch.type is not ChannelType.voice:
-                raise InvalidArgument('Not a voice channel')
-            print("\033[01m{}\033[00m requested me to move to \033[01m{channel.name}\033[00m"
-                  " on \033[01m{channel.server.name}\033[00m"
-                  .format(message.author.name, channel=ch))
-            if voice:
-                yield from voice.disconnect()
-            voice = yield from client.join_voice_channel(ch)
-        except InvalidArgument as e:
-            yield from client.send_message(message.channel, '\n'.join(e.args))
-            pass
-    elif ('stop' in commands and cmd in commands['stop']) or cmd == 'stop':
-        if player:
-            print("Stopping playback on request from \033[01m{}\033[00m".format(message.author.name))
-            player.stop()
-    else:
-        CommandProcessor.process_command(cmd, arg,
-                                         message=message,
-                                         player=player,
-                                         voice=voice,
-                                         client=client,
-                                         commands=commands)
+    yield from CommandProcessor.process_command(cmd, arg,
+                                                commands=commands,
+                                                client=client,
+                                                voice=voice,
+                                                player=player,
+                                                message=message)
 
 
 @client.async_event
