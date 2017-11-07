@@ -74,6 +74,8 @@ def free_player():
 
 def play_file(to_play):
     global player
+    if to_play is None:
+        return
     if to_play.startswith('tts:'):
         to_play = generate_tts(to_play[4:])
     if to_play is not None and player is None and voice.is_connected():
