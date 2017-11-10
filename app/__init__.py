@@ -1,6 +1,7 @@
 from .mydiscord import MyDiscord
 from .cmdprocessor import CommandProcessor
 from .mydiscordimpl import client, play_file, switch_voice_channel
+from .cmdlist import CommandList
 from .cmdmove_to import CommandMoveTo
 from .cmdstop import CommandStop
 

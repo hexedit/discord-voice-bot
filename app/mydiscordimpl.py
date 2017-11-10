@@ -1,6 +1,7 @@
 from . import MyDiscord, CommandProcessor
 from configparser import ConfigParser, NoSectionError, NoOptionError
 from discord import opus, ChannelType
+from collections import OrderedDict
 from yandex_speech import TTS
 from random import randint
 import asyncio
@@ -39,7 +40,7 @@ except (NoSectionError, NoOptionError):
     pass
 player = None
 
-voice_messages = dict()
+voice_messages = OrderedDict()
 try:
     for msg, entry in config.items('voice-messages'):
         voice_messages[msg] = entry
@@ -157,7 +158,8 @@ def process_command(cmd, arg, message):
                                                 client=client,
                                                 voice=voice,
                                                 player=player,
-                                                message=message)
+                                                message=message,
+                                                voice_messages=voice_messages)
 
 
 @client.async_event
@@ -173,7 +175,14 @@ def on_message(message):
         yield from process_command(cmd, arg, message)
     elif voice.is_connected() and player is None:
         to_play = None
-        if message.content.lower() in voice_messages:
+        if message.content.lower() in voice_messages or message.content.isdigit():
+            message_content = message.content
+            if message_content.isdigit():
+                msglist = list(voice_messages.keys())
+                mx = int(message_content)
+                if mx >= len(msglist):
+                    return
+                message_content = msglist[mx]
             if message.server is None:
                 message_author = message.author.name
                 message_channel = "private"
@@ -182,8 +191,8 @@ def on_message(message):
                 message_channel = message.server.name + " / " + message.channel.name
             print("Playing message for \033[01m{}\033[00m at volume \033[01m{}\033[00m"
                   " by \033[01m{}\033[00m at \033[01m{}\033[00m"
-                  .format(message.content, voice_volume, message_author, message_channel))
-            to_play = voice_messages[message.content.lower()]
+                  .format(message_content, voice_volume, message_author, message_channel))
+            to_play = voice_messages[message_content.lower()]
         elif message.content.startswith('tts:'):
             to_play = generate_tts(message.content[4:])
         elif message.server is None:
