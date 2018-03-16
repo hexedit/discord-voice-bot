@@ -178,6 +178,8 @@ def on_message(message):
         if message.content.lower() in voice_messages or message.content.isdigit():
             message_content = message.content
             if message_content.isdigit():
+                if message.server is not None:
+                    return
                 msglist = list(voice_messages.keys())
                 mx = int(message_content)
                 if mx >= len(msglist):
