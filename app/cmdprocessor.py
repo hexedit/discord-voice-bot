@@ -19,14 +19,15 @@ class CommandProcessor(object):
 
     @staticmethod
     def load_modules():
-        mod_list = os.listdir('commands')
-        sys.path.insert(0, 'commands')
+        if os.path.exists('commands') and os.path.isdir('commands'):
+            mod_list = os.listdir('commands')
+            sys.path.insert(0, 'commands')
 
-        for mod in mod_list:
-            if not mod.endswith(".py"):
-                continue
-            print("Found command module: {}".format(mod))
-            __import__(os.path.splitext(mod)[0])
+            for mod in mod_list:
+                if not mod.endswith(".py"):
+                    continue
+                print("Found command module: {}".format(mod))
+                __import__(os.path.splitext(mod)[0])
 
         for mod in CommandProcessor.__subclasses__():
             m = mod()
