@@ -10,6 +10,7 @@ import codecs
 import os.path
 import re
 import ast
+from hashlib import md5
 
 tts_voices = [
     'jane',
@@ -88,14 +89,19 @@ def play_file(to_play):
 
 
 def generate_tts(tts_text):
-    try:
-        tts_voice = tts_voices[randint(0, len(tts_voices) - 1)]
-        key = config.get('tts', 'api key')
-        tts = TTS(tts_voice, 'opus', key, lang='ru_RU', emotion='neutral')
-        tts.generate(tts_text)
-        return tts.save(os.path.join(gettempdir(), "tts.opus"))
-    except (NoSectionError, NoOptionError):
-        return None
+    tts_voice = tts_voices[randint(0, len(tts_voices) - 1)]
+    tts_md5 = md5(tts_text.encode('utf-8')).hexdigest()
+    tts_path = os.path.join(os.getcwd(), 'media', 'cache', 'tts.' + tts_md5 + '.' + tts_voice + '.opus')
+    if os.path.exists(tts_path):
+        return tts_path
+    else:
+        try:
+            key = config.get('tts', 'api key')
+            tts = TTS(tts_voice, 'opus', key, lang='ru_RU', emotion='neutral')
+            tts.generate(tts_text)
+            return tts.save(tts_path)
+        except (NoSectionError, NoOptionError):
+            return None
 
 
 @asyncio.coroutine
