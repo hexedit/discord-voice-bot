@@ -1,5 +1,6 @@
-import discord
 import asyncio
+
+import discord
 
 
 class MyDiscord(discord.Client):
@@ -20,7 +21,7 @@ class MyDiscord(discord.Client):
     @property
     def token(self):
         return self._token
-    
+
     @token.setter
     def token(self, val):
         self._token = val

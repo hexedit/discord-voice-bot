@@ -1,21 +1,24 @@
 #!bin/python
+""" Bot startup """
 
-from app import app
 import signal
 
+from app import app
 
-def finish(sig, frame):
+
+def _finish(sig, frame):
     del sig, frame
     print("Terminate signal received. Stopping...")
     app.stop()
 
 
 if __name__ == '__main__':
-    signal.signal(signal.SIGTERM, finish)
-    signal.signal(signal.SIGINT, finish)
+    signal.signal(signal.SIGTERM, _finish)
+    signal.signal(signal.SIGINT, _finish)
     while True:
         try:
             app.run()
-        finally:
             print("Graceful shutdown, exiting")
+        except:  # pylint: disable=bare-except
+            print("Unhandled exception, exiting")
             break

@@ -1,16 +1,18 @@
-from . import MyDiscord, CommandProcessor
-from configparser import ConfigParser, NoSectionError, NoOptionError
-from discord import opus, ChannelType
-from collections import OrderedDict
-from yandex_speech import TTS
-from random import randint
+import ast
 import asyncio
-from tempfile import gettempdir
 import codecs
 import os.path
 import re
-import ast
+from collections import OrderedDict
+from configparser import ConfigParser, NoOptionError, NoSectionError
 from hashlib import md5
+from random import randint
+from tempfile import gettempdir
+
+from discord import ChannelType, opus
+from yandex_speech import TTS
+
+from . import CommandProcessor, MyDiscord
 
 tts_voices = [
     'jane',
@@ -91,7 +93,10 @@ def play_file(to_play):
 def generate_tts(tts_text):
     tts_voice = tts_voices[randint(0, len(tts_voices) - 1)]
     tts_md5 = md5(tts_text.encode('utf-8')).hexdigest()
-    tts_path = os.path.join(os.getcwd(), 'media', 'cache', 'tts.' + tts_md5 + '.' + tts_voice + '.opus')
+    tts_path = os.path.join(os.getcwd(),
+                            'media',
+                            'cache',
+                            'tts.' + tts_md5 + '.' + tts_voice + '.opus')
     if os.path.exists(tts_path):
         return tts_path
     else:
@@ -122,10 +127,12 @@ def on_ready():
     try:
         global voice
         voice_channel = client.get_channel(config.get('voice', 'channel'))
-        if voice_channel is not None and voice_channel.type is ChannelType.voice:
+        if voice_channel is not None and \
+                voice_channel.type is ChannelType.voice:
             voice = yield from client.join_voice_channel(voice_channel)
         if voice is not None:
-            print("Connected to voice channel \033[01m{channel.name}\033[00m on \033[01m{channel.server.name}\033[00m"
+            print("Connected to voice channel \033[01m{channel.name}\033[00m "
+                  "on \033[01m{channel.server.name}\033[00m"
                   .format(channel=voice_channel))
             try:
                 play_file(config.get('voice', 'play on join'))
@@ -138,7 +145,8 @@ def on_ready():
 @client.async_event
 def on_member_join(member):
     try:
-        play_file(config.get('events', 'member join').format(name=member.display_name))
+        play_file(config.get('events', 'member join')
+                  .format(name=member.display_name))
     except (NoSectionError, NoOptionError):
         pass
 
@@ -146,7 +154,8 @@ def on_member_join(member):
 @client.async_event
 def on_member_remove(member):
     try:
-        play_file(config.get('events', 'member remove').format(name=member.display_name))
+        play_file(config.get('events', 'member remove')
+                  .format(name=member.display_name))
     except (NoSectionError, NoOptionError):
         pass
 
@@ -171,7 +180,7 @@ def process_command(cmd, arg, message):
 @client.async_event
 def on_message(message):
     global player
-    cmd_ptrn = '^\s*([\w\s]+)\s*:\s*(.*)\s*$'
+    cmd_ptrn = r'^\s*([\w\s]+)\s*:\s*(.*)\s*$'
     if message.author == client.user:
         return
     m = re.findall(cmd_ptrn, message.content)
@@ -181,7 +190,8 @@ def on_message(message):
         yield from process_command(cmd, arg, message)
     elif voice.is_connected() and player is None:
         to_play = None
-        if message.content.lower() in voice_messages or message.content.isdigit():
+        if message.content.lower() in voice_messages \
+                or message.content.isdigit():
             message_content = message.content
             if message_content.isdigit():
                 if message.server is not None:
@@ -196,10 +206,15 @@ def on_message(message):
                 message_channel = "private"
             else:
                 message_author = message.author.display_name
-                message_channel = message.server.name + " / " + message.channel.name
-            print("Playing message for \033[01m{}\033[00m at volume \033[01m{}\033[00m"
+                message_channel = message.server.name + " / " \
+                    + message.channel.name
+            print("Playing message for \033[01m{}\033[00m at volume "
+                  "\033[01m{}\033[00m"
                   " by \033[01m{}\033[00m at \033[01m{}\033[00m"
-                  .format(message_content, voice_volume, message_author, message_channel))
+                  .format(message_content,
+                          voice_volume,
+                          message_author,
+                          message_channel))
             to_play = voice_messages[message_content.lower()]
         elif message.content.startswith('tts:'):
             to_play = generate_tts(message.content[4:])
@@ -212,9 +227,12 @@ def on_message(message):
 
 @client.async_event
 def on_voice_state_update(before, after):
-    if voice and voice.is_connected() and after.voice_channel != before.voice_channel:
-        if after == client.user and after.voice_channel != before.voice_channel:
-            print("I have been moved to \033[01m{channel.name}\033[00m on \033[01m{channel.server.name}\033[00m"
+    if voice and voice.is_connected() \
+            and after.voice_channel != before.voice_channel:
+        if after == client.user \
+                and after.voice_channel != before.voice_channel:
+            print("I have been moved to \033[01m{channel.name}\033[00m on "
+                  "\033[01m{channel.server.name}\033[00m"
                   .format(channel=after.voice_channel))
             try:
                 play_file(config.get('voice', 'play on join'))
