@@ -1,4 +1,4 @@
-from . import CommandProcessor
+from .cmdprocessor import CommandProcessor
 import asyncio
 
 

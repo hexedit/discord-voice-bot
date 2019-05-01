@@ -2,7 +2,8 @@ import asyncio
 
 from discord import ChannelType, InvalidArgument
 
-from . import CommandProcessor, switch_voice_channel
+from .cmdprocessor import CommandProcessor
+from .mydiscordimpl import switch_voice_channel
 
 
 class CommandMoveTo(CommandProcessor):

@@ -2,7 +2,7 @@ import asyncio
 
 import discord
 
-from . import CommandProcessor
+from .cmdprocessor import CommandProcessor
 
 
 class CommandList(CommandProcessor):
@@ -19,12 +19,18 @@ class CommandList(CommandProcessor):
                    **kwargs):
         if ('list' in commands and cmd in commands['list']) or cmd == 'list':
             if voice_messages:
-                answer = ""
                 msglist = list(voice_messages.keys())
-                for mx in range(0, len(msglist)):
-                    answer += "{n}\t{m}\n".format(n=mx, m=msglist[mx])
-                answer = discord.Embed(title="Voice messages",
-                                       description=answer)
-                yield from client.send_message(message.channel, embed=answer)
+                msgcount = len(msglist)
+                mx = 0
+                for _px in range(0, int((len(msglist) + 49) / 50)):
+                    answer = ""
+                    for _sx in range(0, 50 if msgcount > 50 else msgcount):
+                        answer += "{n}\t{m}\n".format(n=mx, m=msglist[mx])
+                        mx += 1
+                    embed = discord.Embed(title="Voice messages",
+                                          description=answer)
+                    yield from client.send_message(message.channel,
+                                                   embed=embed)
+                    msgcount -= 50
             return True
         return False

@@ -12,7 +12,8 @@ from tempfile import gettempdir
 from discord import ChannelType, opus
 from yandex_speech import TTS
 
-from . import CommandProcessor, MyDiscord
+from .cmdprocessor import CommandProcessor
+from .mydiscord import MyDiscord
 
 tts_voices = [
     'jane',
